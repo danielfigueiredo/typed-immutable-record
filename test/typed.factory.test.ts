@@ -4,7 +4,7 @@ import {
   makeTypedFactory,
 } from '../src/typed.factory';
 import {expect} from 'chai';
-
+import {fromJS, Map} from 'immutable';
 
 describe('TypedFactory tests and implementation', () => {
 
@@ -82,6 +82,40 @@ describe('TypedFactory tests and implementation', () => {
         expect(skywalkerRecord.pet.type).to.equal('Droid');
       });
     });
+
+    it('should generate records fromJS', () => {
+      const ArtooFactory = makeTypedFactory<IPet, IPetRecord>({
+        name: 'Artoo',
+        type: 'Droid'
+      });
+      const LukeRecordFactory = makeTypedFactory<IPerson, IPersonRecord>({
+        name: 'Luke',
+        pet: ArtooFactory()
+      });
+      const FactoryMap = {
+        root: {
+          useFactory: LukeRecordFactory,
+          pet: {
+            useFactory: ArtooFactory
+          }
+        }
+      };
+      const root = FactoryMap.root;
+      console.log('final', fromJS({
+        name: 'Han solo',
+        pet: {
+          name: 'Chewbacca',
+          type: 'Wookie'
+        }
+      }, function (key, val: any) {
+        if (key !== '') {
+          return root[key].factory(val);
+        } else {
+          return root.factory(val);
+        }
+      }));
+    });
+
   });
 
 });
