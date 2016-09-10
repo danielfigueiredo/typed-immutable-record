@@ -31,8 +31,10 @@ import {
  *
  * Examples in test file: 'test/typed.record.test.ts'
  */
-export interface TypedRecord<T extends TypedRecord<T>>
+export interface TypedRecord<T extends TypedRecord<T>, E>
   extends Map<string, any> {
+
+
 
   set: (prop: string, val: any) => T;
   delete: (key: string) => T;
@@ -40,33 +42,34 @@ export interface TypedRecord<T extends TypedRecord<T>>
   clear: () => T;
   update: {
     (updater: (value: T) => any): T;
-    (key: string, updater: (value: any) => any): T;
-    (key: string, notSetValue: any, updater: (value: any) => any): T;
+    (key: string, updater: <A extends E>(value: A) => A): T;
+    (key: string, notSetValue: any, updater: <A extends E>(value: A) => A): T;
   };
-  merge: (obj: any) => T;
+  merge: (obj: E) => T;
   mergeWith: (
     merger: (previous?: any, next?: any, key?: string) => any,
-    obj: any
+    obj: E
   ) => T;
-  mergeDeep: (obj: any) => T;
+  mergeDeep: (obj: E) => T;
   mergeDeepWith: (
     merger: (previous?: any, next?: any, key?: string) => any,
-    obj: any
+    obj: E
   ) => T;
-  setIn: (keyPath: any[] | Iterable<any, any>, value: any) => T;
+  setIn: (keyPath: any[] | Iterable<any, any>, value: E) => T;
   deleteIn: (keyPath: Array<any> | Iterable<any, any>) => T;
   removeIn: (keyPath: Array<any> | Iterable<any, any>) => T;
   updateIn: {
-    (keyPath: any[] | Iterable<any, any>, updater: (value: any) => any): T;
+    (keyPath: any[] | Iterable<any, any>, updater: (value: E) => E): T;
     (
       keyPath: any[] | Iterable<any, any>,
       notSetValue: any,
       updater: (value: any) => any
     ): T
   };
-  mergeIn: (keyPath: any[] | Iterable<any, any>, obj: any) => T;
-  mergeDeepIn: (keyPath: any[] | Iterable<any, any>, obj: any) => T;
+  mergeIn: (keyPath: any[] | Iterable<any, any>, obj: E) => T;
+  mergeDeepIn: (keyPath: any[] | Iterable<any, any>, obj: E) => T;
   withMutations: (mutator: (mutable: T) => any) => T;
   asMutable: () => T;
   asImmutable: () => T;
+  toJS: () => E;
 };

@@ -13,14 +13,14 @@ describe('TypedFactory tests and implementation', () => {
     type: string;
   };
 
-  interface IPetRecord extends TypedRecord<IPetRecord>, IPet {};
+  interface IPetRecord extends TypedRecord<IPetRecord, IPet>, IPet {};
 
   interface IPerson {
     name: string;
     pet?: IPet;
   };
 
-  interface IPersonRecord extends TypedRecord<IPersonRecord>, IPerson {};
+  interface IPersonRecord extends TypedRecord<IPersonRecord, IPerson>, IPerson {};
 
   describe('The usage of makeTypedFactory and recordify', () => {
     describe('When creating multiples TypedRecords', () => {

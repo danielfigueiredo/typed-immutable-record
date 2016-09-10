@@ -5,9 +5,9 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "npm run typings && rimraf ./dist; tsc;",
-    "test": "npm run typings  && npm run lint && npm run mocha",
+    "test": "npm run typings  && npm run lint && nyc npm run mocha",
     "typings": "rimraf ./typings && typings install",
-    "mocha": "ts-node ./node_modules/mocha/bin/_mocha  --opts ./test/mocha.opts",
+    "mocha": "mocha  --opts ./test/mocha.opts",
     "lint": "tslint 'src/**/*.ts' 'test/**/*/.ts'"
   },
   "typings": "./dist/index.d.ts",
@@ -30,11 +30,12 @@
     "chai": "^3.5.0",
     "immutable": "3.8.1",
     "mocha": "^2.5.3",
+    "nyc": "^8.1.0",
     "rimraf": "^2.5.4",
     "ts-loader": "^0.8.2",
-    "ts-node": "^1.2.1",
+    "ts-node": "^1.3.0",
     "tslint": "^3.13.0",
-    "typescript": "^1.8.10",
+    "typescript": "^2.0.0",
     "typings": "^1.3.2"
   },
   "peerDependencies": {

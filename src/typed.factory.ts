@@ -31,7 +31,7 @@ import {Record} from 'immutable';
  * TypedRecord<T>
  * @see recordify
  */
-export function makeTypedFactory<E, T extends TypedRecord<T> & E>(obj: E):
+export function makeTypedFactory<E, T extends TypedRecord<T, E> & E>(obj: E):
   (val?: E) => T {
 
   const ImmutableRecord = Record(obj);
@@ -62,10 +62,16 @@ export function makeTypedFactory<E, T extends TypedRecord<T> & E>(obj: E):
  * Record.
  * @returns {T} that is the new created TypedRecord
  */
-export function recordify<E, T extends TypedRecord<T> & E>(
+export function recordify<E, T extends TypedRecord<T, E> & E>(
   defaultVal: E,
   val: E = null): T {
 
   const TypedRecordFactory = makeTypedFactory<E, T>(defaultVal);
   return val ? TypedRecordFactory(val) : TypedRecordFactory();
 };
+
+
+
+export function fromJS<E>(json: E, reviverMap: any) {
+
+}
