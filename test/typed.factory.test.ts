@@ -2,7 +2,8 @@ import {TypedRecord} from '../src/typed.record';
 import {
   recordify,
   makeTypedFactory,
-} from '../src/typed.factory';
+  fromJS
+} from '../index';
 import {expect} from 'chai';
 
 
@@ -17,10 +18,13 @@ describe('TypedFactory tests and implementation', () => {
 
   interface IPerson {
     name: string;
-    pet?: IPet;
+    pet?: IPet[];
+    master?: IPerson;
   };
 
   interface IPersonRecord extends TypedRecord<IPersonRecord>, IPerson {};
+
+
 
   describe('The usage of makeTypedFactory and recordify', () => {
     describe('When creating multiples TypedRecords', () => {
@@ -72,16 +76,83 @@ describe('TypedFactory tests and implementation', () => {
       it('should not reference other TypedRecords', () => {
         const skywalkerRecord = recordify<IPerson, IPersonRecord>({
           name: 'Luke Skywalker',
-          pet: recordify<IPet, IPetRecord>({
-            name: 'Artoo',
-            type: 'Droid'
-          })
+          pet: [
+            recordify<IPet, IPetRecord>({
+              name: 'Artoo',
+              type: 'Droid'
+            })
+          ]
         });
         expect(skywalkerRecord.name).to.equal('Luke Skywalker');
-        expect(skywalkerRecord.pet.name).to.equal('Artoo');
-        expect(skywalkerRecord.pet.type).to.equal('Droid');
+        expect(skywalkerRecord.pet[0].name).to.equal('Artoo');
+        expect(skywalkerRecord.pet[0].type).to.equal('Droid');
       });
     });
+  });
+
+  describe('Building record tree', () => {
+    it('should build nested typed records based on a tree structure', () => {
+      const personFactory = makeTypedFactory<IPerson, IPersonRecord>({
+        name: undefined,
+        pet: undefined,
+        master: undefined
+      });
+      const petFactory = makeTypedFactory<IPet, IPetRecord>({
+        name: undefined,
+        type: undefined
+      });
+      const factoryTree = {
+        person: {
+          descriptor: {
+            pet: 'pet',
+            master: 'person'
+          },
+          factory: personFactory
+        },
+        pet: {
+          descriptor: undefined,
+          factory: petFactory
+        }
+      };
+      const padawan = {
+        name: 'Anakin',
+        pet: [
+          {
+            name: 'C3PO',
+            type: 'Droid'
+          },
+          {
+            name: 'R2D2',
+            type: 'Droid'
+          }
+        ],
+        master: {
+          name: 'Obi Wan',
+          pet: [
+            {
+              name: 'Arfour',
+              type: 'Droid'
+            },
+            {
+              name: 'General Grievous',
+              type: 'BFF'
+            }
+          ],
+          master: {
+            name: 'Qui-Gon Jinn',
+            pet: undefined,
+            master: undefined
+          }
+        }
+      };
+      const finalFactory = fromJS<IPerson, IPersonRecord>(
+        padawan,
+        factoryTree,
+        'person'
+      );
+      expect(padawan).to.deep.equal(finalFactory.toJS());
+    });
+
   });
 
 });

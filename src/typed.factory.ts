@@ -1,6 +1,9 @@
 import {TypedRecord} from './typed.record';
-import {Record} from 'immutable';
-
+import {
+  Record,
+  List
+} from 'immutable';
+import * as R from 'ramda';
 
 /**
  * Creates a factory function you can use to make TypedRecords.
@@ -71,4 +74,79 @@ export function recordify<E, T extends TypedRecord<T> & E>(
 
   const TypedRecordFactory = makeTypedFactory<E, T>(defaultVal, name);
   return val ? TypedRecordFactory(val) : TypedRecordFactory();
+};
+
+
+/**
+ * Deeply parses a JS object into a known record structure.
+ * @param obj POJO used to create the record
+ * @param facTree an object which the key = factoryName and the value
+ * is another object with two attributes: descriptor and factory. The descriptor
+ * tells how to parse the object, and the factory holds a reference to
+ * the factory used to create the Record.
+ * The descriptor only needs to reference properties that are nested records. If
+ * no other factories are required to generate the record, the descriptor can be
+ * set to undefined. The following example creates a factoryTree for the
+ * interfaces:
+ *
+ * interface IPet {
+ *   name: string;
+ *   type: string;
+ * };
+ *
+ * interface IPetRecord extends TypedRecord<IPetRecord>, IPet {};
+ *
+ * interface IPerson {
+ *   name: string;
+ *   pet?: IPet[];
+ *   master?: IPerson;
+ * };
+ *
+ * interface IPersonRecord extends TypedRecord<IPersonRecord>, IPerson {};
+ *
+ * const factoryTree = {
+ *   person: {
+ *     descriptor: {
+ *       pet: 'pet',
+ *       master: 'person'
+ *     },
+ *     factory: personFactory
+ *   },
+ *   pet: {
+ *     descriptor: undefined,
+ *     factory: petFactory
+ *   }
+ * };
+ *
+ * @param facName the factory name to be used to parse obj
+ * @returns {T} that is the new created TypedRecord
+ */
+export function fromJS<E, T extends TypedRecord<T> & E>(
+  obj: any,
+  facTree: {
+    [key: string]: {
+      descriptor: {[key: string]: string},
+      factory: <F extends TypedRecord<F>>(val: any) => F
+    }
+  },
+  facName: string): T {
+
+  const facRef = facTree[facName].factory;
+  if (!facRef) { throw new Error(`No factory found for ${facName}`); }
+
+  const partialRecord = R.merge({}, obj);
+  const descriptor = facTree[facName].descriptor;
+
+  if (descriptor) {
+    for (const key in descriptor) {
+      if (Array.isArray(obj[key])) {
+        partialRecord[key] = List(
+          obj[key].map(entry => fromJS(entry, facTree, descriptor[key]))
+        );
+      } else if (typeof obj[key] === 'object') {
+        partialRecord[key] = fromJS(obj[key], facTree, descriptor[key]);
+      }
+    }
+  }
+  return facRef(partialRecord) as T;
 };

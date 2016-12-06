@@ -1,8 +1,7 @@
 {
   "name": "typed-immutable-record",
   "version": false,
-  "globalDependencies": {
-    "chai": "registry:dt/chai#3.4.0+20160601211834",
-    "mocha": "registry:dt/mocha#2.2.5+20160619032855"
+  "dependencies": {
+    "ramda": "registry:npm/ramda#0.21.0+20160531162943"
   }
 }
